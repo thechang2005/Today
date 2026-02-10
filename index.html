@@ -163,7 +163,70 @@
                 if (savedBirthday && savedName) {
                     setBirthday(savedBirthday);
                     setName(savedName);
-                    calculateStats(savedBirthday);
+                    // 즉시 stats 계산하여 폼을 건너뛰기
+                    const birth = new Date(savedBirthday);
+                    const now = new Date();
+                    
+                    const totalMs = now - birth;
+                    const totalSeconds = Math.floor(totalMs / 1000);
+                    const totalMinutes = Math.floor(totalSeconds / 60);
+                    const totalHours = Math.floor(totalMinutes / 60);
+                    const totalDays = Math.floor(totalHours / 24);
+                    const totalWeeks = Math.floor(totalDays / 7);
+                    const totalMonths = Math.floor(totalDays / 30.44);
+                    
+                    let age = now.getFullYear() - birth.getFullYear();
+                    const monthDiff = now.getMonth() - birth.getMonth();
+                    if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birth.getDate())) {
+                        age--;
+                    }
+                    
+                    let sundays = 0;
+                    const tempDate = new Date(birth);
+                    while (tempDate <= now) {
+                        if (tempDate.getDay() === 0) {
+                            sundays++;
+                        }
+                        tempDate.setDate(tempDate.getDate() + 1);
+                    }
+                    
+                    const nextBirthday = new Date(now.getFullYear(), birth.getMonth(), birth.getDate());
+                    if (nextBirthday < now) {
+                        nextBirthday.setFullYear(now.getFullYear() + 1);
+                    }
+                    const daysToNextBirthday = Math.ceil((nextBirthday - now) / (1000 * 60 * 60 * 24));
+                    
+                    const heartbeats = Math.floor(totalMinutes * 75);
+                    const breaths = Math.floor(totalMinutes * 16);
+                    const sleepHours = Math.floor(totalHours * 0.33);
+                    const meals = Math.floor(totalDays * 3);
+                    
+                    const startOfYear = new Date(now.getFullYear(), 0, 1);
+                    const dayOfYear = Math.floor((now - startOfYear) / (1000 * 60 * 60 * 24)) + 1;
+                    const endOfYear = new Date(now.getFullYear(), 11, 31);
+                    const daysLeftInYear = Math.floor((endOfYear - now) / (1000 * 60 * 60 * 24));
+                    const isLeapYear = (now.getFullYear() % 4 === 0 && now.getFullYear() % 100 !== 0) || (now.getFullYear() % 400 === 0);
+                    const totalDaysInYear = isLeapYear ? 366 : 365;
+                    
+                    setStats({
+                        totalDays,
+                        totalHours,
+                        totalMinutes,
+                        totalSeconds,
+                        totalWeeks,
+                        totalMonths,
+                        age,
+                        sundays,
+                        daysToNextBirthday,
+                        heartbeats,
+                        breaths,
+                        sleepHours,
+                        meals,
+                        dayOfYear,
+                        daysLeftInYear,
+                        totalDaysInYear,
+                        birthDate: birth
+                    });
                 }
             }, []);
 

@@ -58,13 +58,9 @@
                 bookmarkUrl: "URL",
                 add: "추가",
                 cancel: "취소",
-                delete: "삭제",
                 weatherAndTime: "시간",
                 addCity: "도시 추가",
                 cityName: "도시 이름",
-                settings: "설정",
-                save: "저장",
-                searchEngine: "검색 엔진",
                 enterNamePlaceholder: "이름을 입력하세요",
                 quotes: [
                     "오늘도 새로운 하루입니다. 최선을 다하세요!",
@@ -115,13 +111,9 @@
                 bookmarkUrl: "URL",
                 add: "Add",
                 cancel: "Cancel",
-                delete: "Delete",
                 weatherAndTime: "Time",
                 addCity: "Add City",
                 cityName: "City Name",
-                settings: "Settings",
-                save: "Save",
-                searchEngine: "Search Engine",
                 enterNamePlaceholder: "Enter your name",
                 quotes: [
                     "Today is a new day. Do your best!",
@@ -195,6 +187,20 @@
             </svg>
         );
 
+        // 일요일 계산 함수 (최적화)
+        function countSundays(birthDate, now) {
+            const birth = new Date(birthDate);
+            const daysDiff = Math.floor((now - birth) / (1000 * 60 * 60 * 24));
+            const weeksDiff = Math.floor(daysDiff / 7);
+            const birthDayOfWeek = birth.getDay();
+            
+            // 대략적인 일요일 수 계산
+            let sundays = weeksDiff;
+            if (birthDayOfWeek === 0) sundays++; // 생일이 일요일이면 +1
+            
+            return sundays;
+        }
+
         function LifeStats() {
             const [lang, setLang] = useState('ko');
             const [birthday, setBirthday] = useState('');
@@ -212,14 +218,45 @@
 
             const t = translations[lang];
 
+            // 1초마다 시간 업데이트
             useEffect(() => {
                 const timer = setInterval(() => {
                     setCurrentTime(new Date());
-                    if (birthday) calculateStats(birthday);
                 }, 1000);
                 return () => clearInterval(timer);
-            }, [birthday]);
+            }, []);
 
+            // stats 업데이트 (currentTime이 변경될 때마다)
+            useEffect(() => {
+                if (birthday) {
+                    const birth = new Date(birthday);
+                    const now = currentTime;
+                    const totalMs = now - birth;
+                    const totalSeconds = Math.floor(totalMs / 1000);
+                    const totalMinutes = Math.floor(totalSeconds / 60);
+                    const totalHours = Math.floor(totalMinutes / 60);
+                    const totalDays = Math.floor(totalHours / 24);
+                    
+                    const startOfYear = new Date(now.getFullYear(), 0, 1);
+                    const dayOfYear = Math.floor((now - startOfYear) / (1000 * 60 * 60 * 24)) + 1;
+                    const endOfYear = new Date(now.getFullYear(), 11, 31);
+                    const daysLeftInYear = Math.floor((endOfYear - now) / (1000 * 60 * 60 * 24));
+                    
+                    if (stats) {
+                        setStats(prev => ({
+                            ...prev,
+                            totalSeconds,
+                            totalMinutes,
+                            totalHours,
+                            totalDays,
+                            dayOfYear,
+                            daysLeftInYear
+                        }));
+                    }
+                }
+            }, [currentTime, birthday]);
+
+            // 초기 로딩
             useEffect(() => {
                 const savedBirthday = localStorage.getItem('userBirthday');
                 const savedName = localStorage.getItem('userName');
@@ -236,78 +273,92 @@
                 if (savedBirthday && savedName) {
                     setBirthday(savedBirthday);
                     setName(savedName);
-                    calculateStatsInitial(savedBirthday);
+                    
+                    // 초기 stats 계산
+                    const birth = new Date(savedBirthday);
+                    const now = new Date();
+                    const totalMs = now - birth;
+                    const totalSeconds = Math.floor(totalMs / 1000);
+                    const totalMinutes = Math.floor(totalSeconds / 60);
+                    const totalHours = Math.floor(totalMinutes / 60);
+                    const totalDays = Math.floor(totalHours / 24);
+                    const totalWeeks = Math.floor(totalDays / 7);
+                    const totalMonths = Math.floor(totalDays / 30.44);
+                    
+                    let age = now.getFullYear() - birth.getFullYear();
+                    const monthDiff = now.getMonth() - birth.getMonth();
+                    if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birth.getDate())) age--;
+                    
+                    const sundays = countSundays(savedBirthday, now);
+                    
+                    const nextBirthday = new Date(now.getFullYear(), birth.getMonth(), birth.getDate());
+                    if (nextBirthday < now) nextBirthday.setFullYear(now.getFullYear() + 1);
+                    const daysToNextBirthday = Math.ceil((nextBirthday - now) / (1000 * 60 * 60 * 24));
+                    
+                    const heartbeats = Math.floor(totalMinutes * 75);
+                    const breaths = Math.floor(totalMinutes * 16);
+                    const sleepHours = Math.floor(totalHours * 0.33);
+                    const meals = Math.floor(totalDays * 3);
+                    
+                    const startOfYear = new Date(now.getFullYear(), 0, 1);
+                    const dayOfYear = Math.floor((now - startOfYear) / (1000 * 60 * 60 * 24)) + 1;
+                    const endOfYear = new Date(now.getFullYear(), 11, 31);
+                    const daysLeftInYear = Math.floor((endOfYear - now) / (1000 * 60 * 60 * 24));
+                    const isLeapYear = (now.getFullYear() % 4 === 0 && now.getFullYear() % 100 !== 0) || (now.getFullYear() % 400 === 0);
+                    const totalDaysInYear = isLeapYear ? 366 : 365;
+                    
+                    setStats({
+                        totalDays, totalHours, totalMinutes, totalSeconds, totalWeeks, totalMonths,
+                        age, sundays, daysToNextBirthday, heartbeats, breaths, sleepHours, meals,
+                        dayOfYear, daysLeftInYear, totalDaysInYear
+                    });
                 }
             }, []);
-
-            const calculateStatsInitial = (birthDate) => {
-                const birth = new Date(birthDate);
-                const now = new Date();
-                const totalMs = now - birth;
-                const totalSeconds = Math.floor(totalMs / 1000);
-                const totalMinutes = Math.floor(totalSeconds / 60);
-                const totalHours = Math.floor(totalMinutes / 60);
-                const totalDays = Math.floor(totalHours / 24);
-                const totalWeeks = Math.floor(totalDays / 7);
-                const totalMonths = Math.floor(totalDays / 30.44);
-                
-                let age = now.getFullYear() - birth.getFullYear();
-                const monthDiff = now.getMonth() - birth.getMonth();
-                if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birth.getDate())) age--;
-                
-                let sundays = 0;
-                const tempDate = new Date(birth);
-                while (tempDate <= now) {
-                    if (tempDate.getDay() === 0) sundays++;
-                    tempDate.setDate(tempDate.getDate() + 1);
-                }
-                
-                const nextBirthday = new Date(now.getFullYear(), birth.getMonth(), birth.getDate());
-                if (nextBirthday < now) nextBirthday.setFullYear(now.getFullYear() + 1);
-                const daysToNextBirthday = Math.ceil((nextBirthday - now) / (1000 * 60 * 60 * 24));
-                
-                const heartbeats = Math.floor(totalMinutes * 75);
-                const breaths = Math.floor(totalMinutes * 16);
-                const sleepHours = Math.floor(totalHours * 0.33);
-                const meals = Math.floor(totalDays * 3);
-                
-                const startOfYear = new Date(now.getFullYear(), 0, 1);
-                const dayOfYear = Math.floor((now - startOfYear) / (1000 * 60 * 60 * 24)) + 1;
-                const endOfYear = new Date(now.getFullYear(), 11, 31);
-                const daysLeftInYear = Math.floor((endOfYear - now) / (1000 * 60 * 60 * 24));
-                const isLeapYear = (now.getFullYear() % 4 === 0 && now.getFullYear() % 100 !== 0) || (now.getFullYear() % 400 === 0);
-                const totalDaysInYear = isLeapYear ? 366 : 365;
-                
-                setStats({
-                    totalDays, totalHours, totalMinutes, totalSeconds, totalWeeks, totalMonths,
-                    age, sundays, daysToNextBirthday, heartbeats, breaths, sleepHours, meals,
-                    dayOfYear, daysLeftInYear, totalDaysInYear, birthDate: birth
-                });
-            };
-
-            const calculateStats = (birthDate) => {
-                const birth = new Date(birthDate);
-                const now = currentTime;
-                const totalMs = now - birth;
-                const totalSeconds = Math.floor(totalMs / 1000);
-                const totalMinutes = Math.floor(totalSeconds / 60);
-                const totalHours = Math.floor(totalMinutes / 60);
-                const totalDays = Math.floor(totalHours / 24);
-                
-                const startOfYear = new Date(now.getFullYear(), 0, 1);
-                const dayOfYear = Math.floor((now - startOfYear) / (1000 * 60 * 60 * 24)) + 1;
-                const endOfYear = new Date(now.getFullYear(), 11, 31);
-                const daysLeftInYear = Math.floor((endOfYear - now) / (1000 * 60 * 60 * 24));
-                
-                setStats(prev => ({ ...prev, totalSeconds, totalMinutes, totalHours, totalDays, dayOfYear, daysLeftInYear }));
-            };
 
             const handleSubmit = (e) => {
                 e.preventDefault();
                 if (birthday && name) {
-                    calculateStatsInitial(birthday);
                     localStorage.setItem('userBirthday', birthday);
                     localStorage.setItem('userName', name);
+                    
+                    // stats 초기 계산
+                    const birth = new Date(birthday);
+                    const now = new Date();
+                    const totalMs = now - birth;
+                    const totalSeconds = Math.floor(totalMs / 1000);
+                    const totalMinutes = Math.floor(totalSeconds / 60);
+                    const totalHours = Math.floor(totalMinutes / 60);
+                    const totalDays = Math.floor(totalHours / 24);
+                    const totalWeeks = Math.floor(totalDays / 7);
+                    const totalMonths = Math.floor(totalDays / 30.44);
+                    
+                    let age = now.getFullYear() - birth.getFullYear();
+                    const monthDiff = now.getMonth() - birth.getMonth();
+                    if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birth.getDate())) age--;
+                    
+                    const sundays = countSundays(birthday, now);
+                    
+                    const nextBirthday = new Date(now.getFullYear(), birth.getMonth(), birth.getDate());
+                    if (nextBirthday < now) nextBirthday.setFullYear(now.getFullYear() + 1);
+                    const daysToNextBirthday = Math.ceil((nextBirthday - now) / (1000 * 60 * 60 * 24));
+                    
+                    const heartbeats = Math.floor(totalMinutes * 75);
+                    const breaths = Math.floor(totalMinutes * 16);
+                    const sleepHours = Math.floor(totalHours * 0.33);
+                    const meals = Math.floor(totalDays * 3);
+                    
+                    const startOfYear = new Date(now.getFullYear(), 0, 1);
+                    const dayOfYear = Math.floor((now - startOfYear) / (1000 * 60 * 60 * 24)) + 1;
+                    const endOfYear = new Date(now.getFullYear(), 11, 31);
+                    const daysLeftInYear = Math.floor((endOfYear - now) / (1000 * 60 * 60 * 24));
+                    const isLeapYear = (now.getFullYear() % 4 === 0 && now.getFullYear() % 100 !== 0) || (now.getFullYear() % 400 === 0);
+                    const totalDaysInYear = isLeapYear ? 366 : 365;
+                    
+                    setStats({
+                        totalDays, totalHours, totalMinutes, totalSeconds, totalWeeks, totalMonths,
+                        age, sundays, daysToNextBirthday, heartbeats, breaths, sleepHours, meals,
+                        dayOfYear, daysLeftInYear, totalDaysInYear
+                    });
                 }
             };
 
@@ -331,10 +382,15 @@
             };
 
             const addBookmark = () => {
-                if (bookmarks.length >= 10) return alert(lang === 'ko' ? '최대 10개까지만 추가할 수 있습니다' : 'Maximum 10 bookmarks allowed');
+                if (bookmarks.length >= 10) {
+                    alert(lang === 'ko' ? '최대 10개까지만 추가할 수 있습니다' : 'Maximum 10 bookmarks allowed');
+                    return;
+                }
                 if (!newBookmark.name || !newBookmark.url) return;
-                let url = newBookmark.url;
-                if (!url.startsWith('http://') && !url.startsWith('https://')) url = 'https://' + url;
+                let url = newBookmark.url.trim();
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    url = 'https://' + url;
+                }
                 const updated = [...bookmarks, { name: newBookmark.name, url, id: Date.now() }];
                 setBookmarks(updated);
                 localStorage.setItem('userBookmarks', JSON.stringify(updated));
@@ -349,9 +405,12 @@
             };
 
             const addCity = () => {
-                if (cities.length >= 10) return alert(lang === 'ko' ? '최대 10개까지만 추가할 수 있습니다' : 'Maximum 10 cities allowed');
+                if (cities.length >= 10) {
+                    alert(lang === 'ko' ? '최대 10개까지만 추가할 수 있습니다' : 'Maximum 10 cities allowed');
+                    return;
+                }
                 if (!newCity.trim()) return;
-                const updated = [...cities, { name: newCity, id: Date.now() }];
+                const updated = [...cities, { name: newCity.trim(), id: Date.now() }];
                 setCities(updated);
                 localStorage.setItem('userCities', JSON.stringify(updated));
                 setNewCity('');
@@ -378,30 +437,27 @@
             const getMotivationalQuote = () => t.quotes[Math.floor(Math.random() * t.quotes.length)];
 
             const getCityTime = () => {
-                return new Date().toLocaleTimeString('en-US', { 
+                return currentTime.toLocaleTimeString('en-US', { 
                     hour: '2-digit', 
                     minute: '2-digit',
                     hour12: true
                 });
             };
 
-            return (
-                <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-4">
-                    <div className="max-w-6xl mx-auto">
-                        {/* 헤더 with 언어 토글 */}
-                        <div className="flex justify-between items-center mb-4 pt-4">
-                            <div></div>
-                            <button onClick={toggleLanguage} className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg backdrop-blur-sm transition-colors">
-                                {lang === 'ko' ? '🇺🇸 English' : '🇰🇷 한국어'}
-                            </button>
-                        </div>
-
-                        <div className="text-center mb-8">
-                            <h1 className="text-5xl font-bold text-white mb-3 drop-shadow-lg">⏰ {t.title}</h1>
-                            <p className="text-xl text-white opacity-90">{t.subtitle}</p>
-                        </div>
-
-                        {!stats && (
+            if (!stats) {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-4">
+                        <div className="max-w-6xl mx-auto">
+                            <div className="flex justify-between items-center mb-4 pt-4">
+                                <div></div>
+                                <button onClick={toggleLanguage} className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg backdrop-blur-sm transition-colors">
+                                    {lang === 'ko' ? '🇺🇸 English' : '🇰🇷 한국어'}
+                                </button>
+                            </div>
+                            <div className="text-center mb-8">
+                                <h1 className="text-5xl font-bold text-white mb-3 drop-shadow-lg">⏰ {t.title}</h1>
+                                <p className="text-xl text-white opacity-90">{t.subtitle}</p>
+                            </div>
                             <div className="max-w-md mx-auto bg-white rounded-2xl shadow-2xl p-8 mb-8">
                                 <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">{t.welcome} 👋</h2>
                                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -422,182 +478,198 @@
                                     </button>
                                 </form>
                             </div>
-                        )}
+                        </div>
+                    </div>
+                );
+            }
 
-                        {stats && (
-                            <div className="space-y-6">
-                                {/* 검색 바 */}
-                                <div className="bg-white rounded-2xl shadow-2xl p-4">
-                                    <form onSubmit={handleSearch} className="flex gap-2">
-                                        <select value={searchEngine} onChange={(e) => { setSearchEngine(e.target.value); localStorage.setItem('searchEngine', e.target.value); }}
-                                            className="px-4 py-2 border-2 border-purple-300 rounded-lg focus:outline-none focus:border-purple-500">
-                                            <option value="google">Google</option>
-                                            <option value="wikipedia">Wikipedia</option>
-                                            <option value="youtube">YouTube</option>
-                                            <option value="github">GitHub</option>
-                                        </select>
-                                        <div className="flex-1 relative">
-                                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                                                placeholder={t.searchPlaceholder}
-                                                className="w-full pl-10 pr-4 py-2 border-2 border-purple-300 rounded-lg text-lg focus:outline-none focus:border-purple-500" />
-                                        </div>
-                                    </form>
-                                </div>
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-4">
+                    <div className="max-w-6xl mx-auto">
+                        <div className="flex justify-between items-center mb-4 pt-4">
+                            <div></div>
+                            <button onClick={toggleLanguage} className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg backdrop-blur-sm transition-colors">
+                                {lang === 'ko' ? '🇺🇸 English' : '🇰🇷 한국어'}
+                            </button>
+                        </div>
 
-                                {/* 북마크 */}
-                                <div className="bg-white rounded-2xl shadow-2xl p-6">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                                            <Bookmark className="w-6 h-6" /> {t.bookmarks}
-                                        </h2>
-                                        {bookmarks.length < 10 && (
-                                            <button onClick={() => setShowBookmarkForm(!showBookmarkForm)}
-                                                className="flex items-center gap-1 bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition-colors">
-                                                <Plus className="w-4 h-4" /> {t.add}
-                                            </button>
-                                        )}
-                                    </div>
-                                    {showBookmarkForm && (
-                                        <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-                                            <input type="text" placeholder={t.bookmarkName} value={newBookmark.name}
-                                                onChange={(e) => setNewBookmark({...newBookmark, name: e.target.value})}
-                                                className="w-full mb-2 p-2 border rounded" />
-                                            <input type="text" placeholder={t.bookmarkUrl} value={newBookmark.url}
-                                                onChange={(e) => setNewBookmark({...newBookmark, url: e.target.value})}
-                                                className="w-full mb-2 p-2 border rounded" />
-                                            <div className="flex gap-2">
-                                                <button onClick={addBookmark} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">{t.add}</button>
-                                                <button onClick={() => setShowBookmarkForm(false)} className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">{t.cancel}</button>
-                                            </div>
-                                        </div>
-                                    )}
-                                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                                        {bookmarks.map(b => (
-                                            <div key={b.id} className="group relative">
-                                                <a href={b.url} target="_blank" rel="noopener noreferrer"
-                                                    className="block p-3 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg hover:from-purple-100 hover:to-pink-100 text-center transition-colors">
-                                                    <p className="font-semibold text-gray-800 truncate">{b.name}</p>
-                                                </a>
-                                                <button onClick={() => deleteBookmark(b.id)}
-                                                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <X className="w-3 h-3" />
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
+                        <div className="text-center mb-8">
+                            <h1 className="text-5xl font-bold text-white mb-3 drop-shadow-lg">⏰ {t.title}</h1>
+                            <p className="text-xl text-white opacity-90">{t.subtitle}</p>
+                        </div>
 
-                                {/* 도시 & 시간 */}
-                                <div className="bg-white rounded-2xl shadow-2xl p-6">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                                            <Globe className="w-6 h-6" /> {t.weatherAndTime}
-                                        </h2>
-                                        {cities.length < 10 && (
-                                            <button onClick={() => setShowCityForm(!showCityForm)}
-                                                className="flex items-center gap-1 bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition-colors">
-                                                <Plus className="w-4 h-4" /> {t.add}
-                                            </button>
-                                        )}
+                        <div className="space-y-6">
+                            {/* 검색 바 */}
+                            <div className="bg-white rounded-2xl shadow-2xl p-4">
+                                <form onSubmit={handleSearch} className="flex gap-2">
+                                    <select value={searchEngine} onChange={(e) => { setSearchEngine(e.target.value); localStorage.setItem('searchEngine', e.target.value); }}
+                                        className="px-4 py-2 border-2 border-purple-300 rounded-lg focus:outline-none focus:border-purple-500">
+                                        <option value="google">Google</option>
+                                        <option value="wikipedia">Wikipedia</option>
+                                        <option value="youtube">YouTube</option>
+                                        <option value="github">GitHub</option>
+                                    </select>
+                                    <div className="flex-1 relative">
+                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                        <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                                            placeholder={t.searchPlaceholder}
+                                            className="w-full pl-10 pr-4 py-2 border-2 border-purple-300 rounded-lg text-lg focus:outline-none focus:border-purple-500" />
                                     </div>
-                                    {showCityForm && (
-                                        <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-                                            <input type="text" placeholder={t.cityName} value={newCity}
-                                                onChange={(e) => setNewCity(e.target.value)}
-                                                className="w-full mb-2 p-2 border rounded" />
-                                            <div className="flex gap-2">
-                                                <button onClick={addCity} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">{t.add}</button>
-                                                <button onClick={() => setShowCityForm(false)} className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">{t.cancel}</button>
-                                            </div>
-                                        </div>
-                                    )}
-                                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                                        {cities.map(city => (
-                                            <div key={city.id} className="group relative bg-gradient-to-br from-blue-50 to-cyan-50 p-4 rounded-lg">
-                                                <button onClick={() => deleteCity(city.id)}
-                                                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <X className="w-3 h-3" />
-                                                </button>
-                                                <p className="font-bold text-gray-800">{city.name}</p>
-                                                <p className="text-2xl font-bold text-blue-600">{getCityTime()}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
+                                </form>
+                            </div>
 
-                                {/* 인사말 */}
-                                <div className="bg-white rounded-2xl shadow-2xl p-8 text-center">
-                                    <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-4">
-                                        {name}{t.greeting} 👋
+                            {/* 북마크 */}
+                            <div className="bg-white rounded-2xl shadow-2xl p-6">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                                        <Bookmark className="w-6 h-6" /> {t.bookmarks}
                                     </h2>
-                                    <p className="text-2xl font-semibold text-gray-700 mb-2">{getMotivationalQuote()}</p>
-                                    <p className="text-gray-500 mt-4">
-                                        {new Date().toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US', { 
-                                            year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
-                                        })}
-                                    </p>
-                                    <button onClick={() => {
-                                            setStats(null); setBirthday(''); setName('');
-                                            localStorage.removeItem('userBirthday'); localStorage.removeItem('userName');
-                                        }}
-                                        className="mt-4 text-sm text-gray-500 hover:text-gray-700 underline">{t.changeInfo}</button>
+                                    {bookmarks.length < 10 && (
+                                        <button onClick={() => setShowBookmarkForm(!showBookmarkForm)}
+                                            className="flex items-center gap-1 bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                                            <Plus className="w-4 h-4" /> {t.add}
+                                        </button>
+                                    )}
                                 </div>
-
-                                {/* 메인 통계 */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    <StatCard icon={Calendar} label={t.daysLived} value={stats.totalDays}
-                                        subtitle={`${stats.age} ${t.age}`} color="from-blue-500 to-blue-600" />
-                                    <StatCard icon={Calendar} label={t.thisYear} value={stats.dayOfYear}
-                                        subtitle={`${stats.totalDaysInYear} ${t.yearProgress} ${stats.dayOfYear}${t.번째날} (${stats.daysLeftInYear} ${t.daysLeft})`}
-                                        color="from-indigo-500 to-indigo-600" />
-                                    <StatCard icon={Sun} label={t.sundays} value={stats.sundays}
-                                        subtitle={t.sundaysSubtitle} color="from-yellow-500 to-orange-500" />
-                                    <StatCard icon={Clock} label={t.hoursLived} value={stats.totalHours}
-                                        subtitle={`${stats.totalMinutes.toLocaleString()} ${t.minutes}`} color="from-green-500 to-green-600" />
-                                    <StatCard icon={Heart} label={t.heartbeats} value={stats.heartbeats}
-                                        subtitle={t.heartbeatsSubtitle} color="from-red-500 to-pink-500" />
-                                    <StatCard icon={TrendingUp} label={t.breaths} value={stats.breaths}
-                                        subtitle={t.breathsSubtitle} color="from-cyan-500 to-blue-500" />
-                                    <StatCard icon={Award} label={t.nextBirthday} value={stats.daysToNextBirthday}
-                                        subtitle={t.daysRemaining} color="from-purple-500 to-indigo-500" />
-                                </div>
-
-                                {/* 재미있는 통계 */}
-                                <div className="bg-white rounded-2xl shadow-2xl p-8">
-                                    <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">{t.funStats}</h2>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-                                        <div><p className="text-3xl font-bold text-purple-600">{stats.totalWeeks.toLocaleString()}</p>
-                                            <p className="text-gray-600 mt-1">{t.weeks}</p></div>
-                                        <div><p className="text-3xl font-bold text-pink-600">{stats.totalMonths.toLocaleString()}</p>
-                                            <p className="text-gray-600 mt-1">{t.months}</p></div>
-                                        <div><p className="text-3xl font-bold text-blue-600">{stats.sleepHours.toLocaleString()}</p>
-                                            <p className="text-gray-600 mt-1">{t.sleepHours}</p></div>
-                                        <div><p className="text-3xl font-bold text-orange-600">{stats.meals.toLocaleString()}</p>
-                                            <p className="text-gray-600 mt-1">{t.meals}</p></div>
+                                {showBookmarkForm && (
+                                    <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+                                        <input type="text" placeholder={t.bookmarkName} value={newBookmark.name}
+                                            onChange={(e) => setNewBookmark({...newBookmark, name: e.target.value})}
+                                            className="w-full mb-2 p-2 border rounded" />
+                                        <input type="text" placeholder={t.bookmarkUrl} value={newBookmark.url}
+                                            onChange={(e) => setNewBookmark({...newBookmark, url: e.target.value})}
+                                            className="w-full mb-2 p-2 border rounded" />
+                                        <div className="flex gap-2">
+                                            <button onClick={addBookmark} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">{t.add}</button>
+                                            <button onClick={() => setShowBookmarkForm(false)} className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">{t.cancel}</button>
+                                        </div>
                                     </div>
-                                </div>
-
-                                {/* 실시간 카운터 */}
-                                <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl shadow-2xl p-8 text-white">
-                                    <h2 className="text-2xl font-bold mb-4 text-center">{t.realtimeCounter}</h2>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                                        <div><p className="text-2xl font-bold">{stats.totalSeconds.toLocaleString()}</p>
-                                            <p className="text-sm opacity-90">{t.seconds}</p></div>
-                                        <div><p className="text-2xl font-bold">{stats.totalMinutes.toLocaleString()}</p>
-                                            <p className="text-sm opacity-90">{t.minutes}</p></div>
-                                        <div><p className="text-2xl font-bold">{stats.totalHours.toLocaleString()}</p>
-                                            <p className="text-sm opacity-90">{t.hours}</p></div>
-                                        <div><p className="text-2xl font-bold">{stats.totalDays.toLocaleString()}</p>
-                                            <p className="text-sm opacity-90">{t.days}</p></div>
-                                    </div>
+                                )}
+                                <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                                    {bookmarks.map(b => (
+                                        <div key={b.id} className="group relative">
+                                            <a href={b.url} target="_blank" rel="noopener noreferrer"
+                                                className="block p-3 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg hover:from-purple-100 hover:to-pink-100 text-center transition-colors">
+                                                <p className="font-semibold text-gray-800 truncate">{b.name}</p>
+                                            </a>
+                                            <button onClick={() => deleteBookmark(b.id)}
+                                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <X className="w-3 h-3" />
+                                            </button>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
-                        )}
+
+                            {/* 도시 & 시간 */}
+                            <div className="bg-white rounded-2xl shadow-2xl p-6">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                                        <Globe className="w-6 h-6" /> {t.weatherAndTime}
+                                    </h2>
+                                    {cities.length < 10 && (
+                                        <button onClick={() => setShowCityForm(!showCityForm)}
+                                            className="flex items-center gap-1 bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                                            <Plus className="w-4 h-4" /> {t.add}
+                                        </button>
+                                    )}
+                                </div>
+                                {showCityForm && (
+                                    <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+                                        <input type="text" placeholder={t.cityName} value={newCity}
+                                            onChange={(e) => setNewCity(e.target.value)}
+                                            className="w-full mb-2 p-2 border rounded" />
+                                        <div className="flex gap-2">
+                                            <button onClick={addCity} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">{t.add}</button>
+                                            <button onClick={() => setShowCityForm(false)} className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">{t.cancel}</button>
+                                        </div>
+                                    </div>
+                                )}
+                                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                    {cities.map(city => (
+                                        <div key={city.id} className="group relative bg-gradient-to-br from-blue-50 to-cyan-50 p-4 rounded-lg">
+                                            <button onClick={() => deleteCity(city.id)}
+                                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <X className="w-3 h-3" />
+                                            </button>
+                                            <p className="font-bold text-gray-800">{city.name}</p>
+                                            <p className="text-2xl font-bold text-blue-600">{getCityTime()}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* 인사말 */}
+                            <div className="bg-white rounded-2xl shadow-2xl p-8 text-center">
+                                <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-4">
+                                    {name}{t.greeting} 👋
+                                </h2>
+                                <p className="text-2xl font-semibold text-gray-700 mb-2">{getMotivationalQuote()}</p>
+                                <p className="text-gray-500 mt-4">
+                                    {currentTime.toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US', { 
+                                        year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
+                                    })}
+                                </p>
+                                <button onClick={() => {
+                                        setStats(null); setBirthday(''); setName('');
+                                        localStorage.removeItem('userBirthday'); localStorage.removeItem('userName');
+                                    }}
+                                    className="mt-4 text-sm text-gray-500 hover:text-gray-700 underline">{t.changeInfo}</button>
+                            </div>
+
+                            {/* 메인 통계 */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <StatCard icon={Calendar} label={t.daysLived} value={stats.totalDays}
+                                    subtitle={`${stats.age} ${t.age}`} color="from-blue-500 to-blue-600" />
+                                <StatCard icon={Calendar} label={t.thisYear} value={stats.dayOfYear}
+                                    subtitle={`${stats.totalDaysInYear} ${t.yearProgress} ${stats.dayOfYear}${t.번째날} (${stats.daysLeftInYear} ${t.daysLeft})`}
+                                    color="from-indigo-500 to-indigo-600" />
+                                <StatCard icon={Sun} label={t.sundays} value={stats.sundays}
+                                    subtitle={t.sundaysSubtitle} color="from-yellow-500 to-orange-500" />
+                                <StatCard icon={Clock} label={t.hoursLived} value={stats.totalHours}
+                                    subtitle={`${stats.totalMinutes.toLocaleString()} ${t.minutes}`} color="from-green-500 to-green-600" />
+                                <StatCard icon={Heart} label={t.heartbeats} value={stats.heartbeats}
+                                    subtitle={t.heartbeatsSubtitle} color="from-red-500 to-pink-500" />
+                                <StatCard icon={TrendingUp} label={t.breaths} value={stats.breaths}
+                                    subtitle={t.breathsSubtitle} color="from-cyan-500 to-blue-500" />
+                                <StatCard icon={Award} label={t.nextBirthday} value={stats.daysToNextBirthday}
+                                    subtitle={t.daysRemaining} color="from-purple-500 to-indigo-500" />
+                            </div>
+
+                            {/* 재미있는 통계 */}
+                            <div className="bg-white rounded-2xl shadow-2xl p-8">
+                                <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">{t.funStats}</h2>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                                    <div><p className="text-3xl font-bold text-purple-600">{stats.totalWeeks.toLocaleString()}</p>
+                                        <p className="text-gray-600 mt-1">{t.weeks}</p></div>
+                                    <div><p className="text-3xl font-bold text-pink-600">{stats.totalMonths.toLocaleString()}</p>
+                                        <p className="text-gray-600 mt-1">{t.months}</p></div>
+                                    <div><p className="text-3xl font-bold text-blue-600">{stats.sleepHours.toLocaleString()}</p>
+                                        <p className="text-gray-600 mt-1">{t.sleepHours}</p></div>
+                                    <div><p className="text-3xl font-bold text-orange-600">{stats.meals.toLocaleString()}</p>
+                                        <p className="text-gray-600 mt-1">{t.meals}</p></div>
+                                </div>
+                            </div>
+
+                            {/* 실시간 카운터 */}
+                            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl shadow-2xl p-8 text-white">
+                                <h2 className="text-2xl font-bold mb-4 text-center">{t.realtimeCounter}</h2>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                                    <div><p className="text-2xl font-bold">{stats.totalSeconds.toLocaleString()}</p>
+                                        <p className="text-sm opacity-90">{t.seconds}</p></div>
+                                    <div><p className="text-2xl font-bold">{stats.totalMinutes.toLocaleString()}</p>
+                                        <p className="text-sm opacity-90">{t.minutes}</p></div>
+                                    <div><p className="text-2xl font-bold">{stats.totalHours.toLocaleString()}</p>
+                                        <p className="text-sm opacity-90">{t.hours}</p></div>
+                                    <div><p className="text-2xl font-bold">{stats.totalDays.toLocaleString()}</p>
+                                        <p className="text-sm opacity-90">{t.days}</p></div>
+                                </div>
+                            </div>
+                        </div>
 
                         <div className="text-center mt-8 pb-8">
                             <p className="text-white text-sm opacity-75">
-                                {new Date().toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US', { 
+                                {currentTime.toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US', { 
                                     year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
                                 })}
                             </p>

@@ -15,77 +15,234 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // Lucide Icons를 SVG로 직접 구현
+        // 언어 번역
+        const translations = {
+            ko: {
+                title: "Life Stats Dashboard",
+                subtitle: "당신의 인생, 숫자로 확인하기",
+                welcome: "환영합니다!",
+                name: "이름",
+                birthday: "생년월일",
+                start: "시작하기",
+                greeting: "님, 안녕하세요!",
+                changeInfo: "정보 변경하기",
+                daysLived: "살아온 날",
+                thisYear: "올해",
+                sundays: "지나온 일요일",
+                sundaysSubtitle: "휴식의 날들",
+                hoursLived: "살아온 시간",
+                heartbeats: "심장 박동",
+                heartbeatsSubtitle: "계속 뛰고 있습니다",
+                breaths: "숨쉰 횟수",
+                breathsSubtitle: "생명의 숨결",
+                nextBirthday: "다음 생일까지",
+                daysRemaining: "일 남았습니다",
+                funStats: "재미있는 통계들",
+                weeks: "주",
+                months: "개월",
+                sleepHours: "수면 시간",
+                meals: "먹은 식사",
+                realtimeCounter: "실시간 카운터",
+                seconds: "초",
+                minutes: "분",
+                hours: "시간",
+                days: "일",
+                age: "세",
+                yearProgress: "일 중",
+                번째날: "번째 날",
+                daysLeft: "일 남음",
+                searchPlaceholder: "검색...",
+                bookmarks: "북마크",
+                addBookmark: "북마크 추가",
+                bookmarkName: "이름",
+                bookmarkUrl: "URL",
+                add: "추가",
+                cancel: "취소",
+                delete: "삭제",
+                weatherAndTime: "시간",
+                addCity: "도시 추가",
+                cityName: "도시 이름",
+                settings: "설정",
+                save: "저장",
+                searchEngine: "검색 엔진",
+                enterNamePlaceholder: "이름을 입력하세요",
+                quotes: [
+                    "오늘도 새로운 하루입니다. 최선을 다하세요!",
+                    "매 순간이 소중합니다. 지금 이 순간에 집중하세요.",
+                    "당신의 시간은 한정되어 있습니다. 가치있게 보내세요.",
+                    "매일이 새로운 기회입니다. 도전하세요!",
+                    "시간은 금입니다. 오늘을 최대한 활용하세요!"
+                ]
+            },
+            en: {
+                title: "Life Stats Dashboard",
+                subtitle: "Your Life, By The Numbers",
+                welcome: "Welcome!",
+                name: "Name",
+                birthday: "Birthday",
+                start: "Start",
+                greeting: ", Hello!",
+                changeInfo: "Change Info",
+                daysLived: "Days Lived",
+                thisYear: "This Year",
+                sundays: "Sundays Passed",
+                sundaysSubtitle: "Days of rest",
+                hoursLived: "Hours Lived",
+                heartbeats: "Heartbeats",
+                heartbeatsSubtitle: "Still beating",
+                breaths: "Breaths Taken",
+                breathsSubtitle: "Breath of life",
+                nextBirthday: "Next Birthday",
+                daysRemaining: "days remaining",
+                funStats: "Fun Statistics",
+                weeks: "Weeks",
+                months: "Months",
+                sleepHours: "Sleep Hours",
+                meals: "Meals Eaten",
+                realtimeCounter: "Real-time Counter",
+                seconds: "Seconds",
+                minutes: "Minutes",
+                hours: "Hours",
+                days: "Days",
+                age: "years old",
+                yearProgress: "of",
+                번째날: "th day",
+                daysLeft: "remaining",
+                searchPlaceholder: "Search...",
+                bookmarks: "Bookmarks",
+                addBookmark: "Add Bookmark",
+                bookmarkName: "Name",
+                bookmarkUrl: "URL",
+                add: "Add",
+                cancel: "Cancel",
+                delete: "Delete",
+                weatherAndTime: "Time",
+                addCity: "Add City",
+                cityName: "City Name",
+                settings: "Settings",
+                save: "Save",
+                searchEngine: "Search Engine",
+                enterNamePlaceholder: "Enter your name",
+                quotes: [
+                    "Today is a new day. Do your best!",
+                    "Every moment is precious. Focus on this moment.",
+                    "Your time is limited. Spend it wisely.",
+                    "Every day is a new opportunity. Challenge yourself!",
+                    "Time is gold. Make the most of today!"
+                ]
+            }
+        };
+
+        // SVG 아이콘들
         const Calendar = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/>
-                <line x1="8" y1="2" x2="8" y2="6"/>
-                <line x1="3" y1="10" x2="21" y2="10"/>
+                <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
             </svg>
         );
-
         const Clock = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
             </svg>
         );
-
         const Heart = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
             </svg>
         );
-
         const Sun = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="5"/>
-                <line x1="12" y1="1" x2="12" y2="3"/>
-                <line x1="12" y1="21" x2="12" y2="23"/>
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                <line x1="1" y1="12" x2="3" y2="12"/>
-                <line x1="21" y1="12" x2="23" y2="12"/>
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
             </svg>
         );
-
         const Award = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <circle cx="12" cy="8" r="7"/>
-                <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                <circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>
             </svg>
         );
-
         const TrendingUp = ({ className }) => (
-            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-                <polyline points="17 6 23 6 23 12"/>
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
+            </svg>
+        );
+        const Globe = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+        );
+        const Search = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+        );
+        const Bookmark = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                <path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+            </svg>
+        );
+        const Plus = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+        );
+        const X = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
         );
 
         function LifeStats() {
+            const [lang, setLang] = useState('ko');
             const [birthday, setBirthday] = useState('');
             const [name, setName] = useState('');
             const [stats, setStats] = useState(null);
             const [currentTime, setCurrentTime] = useState(new Date());
+            const [searchQuery, setSearchQuery] = useState('');
+            const [searchEngine, setSearchEngine] = useState('google');
+            const [bookmarks, setBookmarks] = useState([]);
+            const [showBookmarkForm, setShowBookmarkForm] = useState(false);
+            const [newBookmark, setNewBookmark] = useState({ name: '', url: '' });
+            const [cities, setCities] = useState([]);
+            const [showCityForm, setShowCityForm] = useState(false);
+            const [newCity, setNewCity] = useState('');
+
+            const t = translations[lang];
 
             useEffect(() => {
                 const timer = setInterval(() => {
                     setCurrentTime(new Date());
-                    if (birthday) {
-                        calculateStats(birthday);
-                    }
+                    if (birthday) calculateStats(birthday);
                 }, 1000);
                 return () => clearInterval(timer);
             }, [birthday]);
 
-            const calculateStats = (birthDate) => {
+            useEffect(() => {
+                const savedBirthday = localStorage.getItem('userBirthday');
+                const savedName = localStorage.getItem('userName');
+                const savedLang = localStorage.getItem('userLang') || 'ko';
+                const savedBookmarks = JSON.parse(localStorage.getItem('userBookmarks') || '[]');
+                const savedCities = JSON.parse(localStorage.getItem('userCities') || '[]');
+                const savedSearchEngine = localStorage.getItem('searchEngine') || 'google';
+
+                setLang(savedLang);
+                setBookmarks(savedBookmarks);
+                setCities(savedCities);
+                setSearchEngine(savedSearchEngine);
+
+                if (savedBirthday && savedName) {
+                    setBirthday(savedBirthday);
+                    setName(savedName);
+                    calculateStatsInitial(savedBirthday);
+                }
+            }, []);
+
+            const calculateStatsInitial = (birthDate) => {
                 const birth = new Date(birthDate);
-                const now = currentTime;
-                
+                const now = new Date();
                 const totalMs = now - birth;
                 const totalSeconds = Math.floor(totalMs / 1000);
                 const totalMinutes = Math.floor(totalSeconds / 60);
@@ -96,23 +253,17 @@
                 
                 let age = now.getFullYear() - birth.getFullYear();
                 const monthDiff = now.getMonth() - birth.getMonth();
-                if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birth.getDate())) {
-                    age--;
-                }
+                if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birth.getDate())) age--;
                 
                 let sundays = 0;
                 const tempDate = new Date(birth);
                 while (tempDate <= now) {
-                    if (tempDate.getDay() === 0) {
-                        sundays++;
-                    }
+                    if (tempDate.getDay() === 0) sundays++;
                     tempDate.setDate(tempDate.getDate() + 1);
                 }
                 
                 const nextBirthday = new Date(now.getFullYear(), birth.getMonth(), birth.getDate());
-                if (nextBirthday < now) {
-                    nextBirthday.setFullYear(now.getFullYear() + 1);
-                }
+                if (nextBirthday < now) nextBirthday.setFullYear(now.getFullYear() + 1);
                 const daysToNextBirthday = Math.ceil((nextBirthday - now) / (1000 * 60 * 60 * 24));
                 
                 const heartbeats = Math.floor(totalMinutes * 75);
@@ -128,107 +279,90 @@
                 const totalDaysInYear = isLeapYear ? 366 : 365;
                 
                 setStats({
-                    totalDays,
-                    totalHours,
-                    totalMinutes,
-                    totalSeconds,
-                    totalWeeks,
-                    totalMonths,
-                    age,
-                    sundays,
-                    daysToNextBirthday,
-                    heartbeats,
-                    breaths,
-                    sleepHours,
-                    meals,
-                    dayOfYear,
-                    daysLeftInYear,
-                    totalDaysInYear,
-                    birthDate: birth
+                    totalDays, totalHours, totalMinutes, totalSeconds, totalWeeks, totalMonths,
+                    age, sundays, daysToNextBirthday, heartbeats, breaths, sleepHours, meals,
+                    dayOfYear, daysLeftInYear, totalDaysInYear, birthDate: birth
                 });
+            };
+
+            const calculateStats = (birthDate) => {
+                const birth = new Date(birthDate);
+                const now = currentTime;
+                const totalMs = now - birth;
+                const totalSeconds = Math.floor(totalMs / 1000);
+                const totalMinutes = Math.floor(totalSeconds / 60);
+                const totalHours = Math.floor(totalMinutes / 60);
+                const totalDays = Math.floor(totalHours / 24);
+                
+                const startOfYear = new Date(now.getFullYear(), 0, 1);
+                const dayOfYear = Math.floor((now - startOfYear) / (1000 * 60 * 60 * 24)) + 1;
+                const endOfYear = new Date(now.getFullYear(), 11, 31);
+                const daysLeftInYear = Math.floor((endOfYear - now) / (1000 * 60 * 60 * 24));
+                
+                setStats(prev => ({ ...prev, totalSeconds, totalMinutes, totalHours, totalDays, dayOfYear, daysLeftInYear }));
             };
 
             const handleSubmit = (e) => {
                 e.preventDefault();
                 if (birthday && name) {
-                    calculateStats(birthday);
+                    calculateStatsInitial(birthday);
                     localStorage.setItem('userBirthday', birthday);
                     localStorage.setItem('userName', name);
                 }
             };
 
-            useEffect(() => {
-                const savedBirthday = localStorage.getItem('userBirthday');
-                const savedName = localStorage.getItem('userName');
-                if (savedBirthday && savedName) {
-                    setBirthday(savedBirthday);
-                    setName(savedName);
-                    // 즉시 stats 계산하여 폼을 건너뛰기
-                    const birth = new Date(savedBirthday);
-                    const now = new Date();
-                    
-                    const totalMs = now - birth;
-                    const totalSeconds = Math.floor(totalMs / 1000);
-                    const totalMinutes = Math.floor(totalSeconds / 60);
-                    const totalHours = Math.floor(totalMinutes / 60);
-                    const totalDays = Math.floor(totalHours / 24);
-                    const totalWeeks = Math.floor(totalDays / 7);
-                    const totalMonths = Math.floor(totalDays / 30.44);
-                    
-                    let age = now.getFullYear() - birth.getFullYear();
-                    const monthDiff = now.getMonth() - birth.getMonth();
-                    if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birth.getDate())) {
-                        age--;
-                    }
-                    
-                    let sundays = 0;
-                    const tempDate = new Date(birth);
-                    while (tempDate <= now) {
-                        if (tempDate.getDay() === 0) {
-                            sundays++;
-                        }
-                        tempDate.setDate(tempDate.getDate() + 1);
-                    }
-                    
-                    const nextBirthday = new Date(now.getFullYear(), birth.getMonth(), birth.getDate());
-                    if (nextBirthday < now) {
-                        nextBirthday.setFullYear(now.getFullYear() + 1);
-                    }
-                    const daysToNextBirthday = Math.ceil((nextBirthday - now) / (1000 * 60 * 60 * 24));
-                    
-                    const heartbeats = Math.floor(totalMinutes * 75);
-                    const breaths = Math.floor(totalMinutes * 16);
-                    const sleepHours = Math.floor(totalHours * 0.33);
-                    const meals = Math.floor(totalDays * 3);
-                    
-                    const startOfYear = new Date(now.getFullYear(), 0, 1);
-                    const dayOfYear = Math.floor((now - startOfYear) / (1000 * 60 * 60 * 24)) + 1;
-                    const endOfYear = new Date(now.getFullYear(), 11, 31);
-                    const daysLeftInYear = Math.floor((endOfYear - now) / (1000 * 60 * 60 * 24));
-                    const isLeapYear = (now.getFullYear() % 4 === 0 && now.getFullYear() % 100 !== 0) || (now.getFullYear() % 400 === 0);
-                    const totalDaysInYear = isLeapYear ? 366 : 365;
-                    
-                    setStats({
-                        totalDays,
-                        totalHours,
-                        totalMinutes,
-                        totalSeconds,
-                        totalWeeks,
-                        totalMonths,
-                        age,
-                        sundays,
-                        daysToNextBirthday,
-                        heartbeats,
-                        breaths,
-                        sleepHours,
-                        meals,
-                        dayOfYear,
-                        daysLeftInYear,
-                        totalDaysInYear,
-                        birthDate: birth
-                    });
-                }
-            }, []);
+            const toggleLanguage = () => {
+                const newLang = lang === 'ko' ? 'en' : 'ko';
+                setLang(newLang);
+                localStorage.setItem('userLang', newLang);
+            };
+
+            const handleSearch = (e) => {
+                e.preventDefault();
+                if (!searchQuery.trim()) return;
+                const engines = {
+                    google: `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`,
+                    wikipedia: `https://en.wikipedia.org/wiki/Special:Search?search=${encodeURIComponent(searchQuery)}`,
+                    youtube: `https://www.youtube.com/results?search_query=${encodeURIComponent(searchQuery)}`,
+                    github: `https://github.com/search?q=${encodeURIComponent(searchQuery)}`
+                };
+                window.open(engines[searchEngine] || engines.google, '_blank');
+                setSearchQuery('');
+            };
+
+            const addBookmark = () => {
+                if (bookmarks.length >= 10) return alert(lang === 'ko' ? '최대 10개까지만 추가할 수 있습니다' : 'Maximum 10 bookmarks allowed');
+                if (!newBookmark.name || !newBookmark.url) return;
+                let url = newBookmark.url;
+                if (!url.startsWith('http://') && !url.startsWith('https://')) url = 'https://' + url;
+                const updated = [...bookmarks, { name: newBookmark.name, url, id: Date.now() }];
+                setBookmarks(updated);
+                localStorage.setItem('userBookmarks', JSON.stringify(updated));
+                setNewBookmark({ name: '', url: '' });
+                setShowBookmarkForm(false);
+            };
+
+            const deleteBookmark = (id) => {
+                const updated = bookmarks.filter(b => b.id !== id);
+                setBookmarks(updated);
+                localStorage.setItem('userBookmarks', JSON.stringify(updated));
+            };
+
+            const addCity = () => {
+                if (cities.length >= 10) return alert(lang === 'ko' ? '최대 10개까지만 추가할 수 있습니다' : 'Maximum 10 cities allowed');
+                if (!newCity.trim()) return;
+                const updated = [...cities, { name: newCity, id: Date.now() }];
+                setCities(updated);
+                localStorage.setItem('userCities', JSON.stringify(updated));
+                setNewCity('');
+                setShowCityForm(false);
+            };
+
+            const deleteCity = (id) => {
+                const updated = cities.filter(c => c.id !== id);
+                setCities(updated);
+                localStorage.setItem('userCities', JSON.stringify(updated));
+            };
 
             const StatCard = ({ icon: Icon, label, value, subtitle, color }) => (
                 <div className={`bg-gradient-to-br ${color} p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-200`}>
@@ -241,65 +375,50 @@
                 </div>
             );
 
-            const getMotivationalQuote = () => {
-                const quotes = [
-                    "오늘도 새로운 하루입니다. 최선을 다하세요!",
-                    "매 순간이 소중합니다. 지금 이 순간에 집중하세요.",
-                    "당신의 시간은 한정되어 있습니다. 가치있게 보내세요.",
-                    "매일이 새로운 기회입니다. 도전하세요!",
-                    "시간은 금입니다. 오늘을 최대한 활용하세요!"
-                ];
-                return quotes[Math.floor(Math.random() * quotes.length)];
+            const getMotivationalQuote = () => t.quotes[Math.floor(Math.random() * t.quotes.length)];
+
+            const getCityTime = () => {
+                return new Date().toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: true
+                });
             };
 
             return (
                 <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-4">
                     <div className="max-w-6xl mx-auto">
-                        <div className="text-center mb-8 pt-8">
-                            <h1 className="text-5xl font-bold text-white mb-3 drop-shadow-lg">
-                                ⏰ Life Stats Dashboard
-                            </h1>
-                            <p className="text-xl text-white opacity-90">
-                                당신의 인생, 숫자로 확인하기
-                            </p>
+                        {/* 헤더 with 언어 토글 */}
+                        <div className="flex justify-between items-center mb-4 pt-4">
+                            <div></div>
+                            <button onClick={toggleLanguage} className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg backdrop-blur-sm transition-colors">
+                                {lang === 'ko' ? '🇺🇸 English' : '🇰🇷 한국어'}
+                            </button>
+                        </div>
+
+                        <div className="text-center mb-8">
+                            <h1 className="text-5xl font-bold text-white mb-3 drop-shadow-lg">⏰ {t.title}</h1>
+                            <p className="text-xl text-white opacity-90">{t.subtitle}</p>
                         </div>
 
                         {!stats && (
                             <div className="max-w-md mx-auto bg-white rounded-2xl shadow-2xl p-8 mb-8">
-                                <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-                                    환영합니다! 👋
-                                </h2>
+                                <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">{t.welcome} 👋</h2>
                                 <form onSubmit={handleSubmit} className="space-y-4">
                                     <div>
-                                        <label className="block text-gray-700 font-semibold mb-2">
-                                            이름
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={name}
-                                            onChange={(e) => setName(e.target.value)}
-                                            placeholder="이름을 입력하세요"
-                                            className="w-full p-4 border-2 border-purple-300 rounded-lg text-lg focus:outline-none focus:border-purple-500"
-                                            required
-                                        />
+                                        <label className="block text-gray-700 font-semibold mb-2">{t.name}</label>
+                                        <input type="text" value={name} onChange={(e) => setName(e.target.value)}
+                                            placeholder={t.enterNamePlaceholder}
+                                            className="w-full p-4 border-2 border-purple-300 rounded-lg text-lg focus:outline-none focus:border-purple-500" required />
                                     </div>
                                     <div>
-                                        <label className="block text-gray-700 font-semibold mb-2">
-                                            생년월일
-                                        </label>
-                                        <input
-                                            type="date"
-                                            value={birthday}
-                                            onChange={(e) => setBirthday(e.target.value)}
-                                            className="w-full p-4 border-2 border-purple-300 rounded-lg text-lg focus:outline-none focus:border-purple-500"
-                                            required
-                                        />
+                                        <label className="block text-gray-700 font-semibold mb-2">{t.birthday}</label>
+                                        <input type="date" value={birthday} onChange={(e) => setBirthday(e.target.value)}
+                                            className="w-full p-4 border-2 border-purple-300 rounded-lg text-lg focus:outline-none focus:border-purple-500" required />
                                     </div>
-                                    <button
-                                        type="submit"
-                                        className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-lg font-semibold text-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg"
-                                    >
-                                        시작하기
+                                    <button type="submit"
+                                        className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-lg font-semibold text-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg">
+                                        {t.start}
                                     </button>
                                 </form>
                             </div>
@@ -307,130 +426,170 @@
 
                         {stats && (
                             <div className="space-y-6">
-                                <div className="bg-white rounded-2xl shadow-2xl p-8 text-center">
-                                    <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-4">
-                                        {name}님, 안녕하세요! 👋
-                                    </h2>
-                                    <p className="text-2xl font-semibold text-gray-700 mb-2">
-                                        {getMotivationalQuote()}
-                                    </p>
-                                    <p className="text-gray-500 mt-4">
-                                        {new Date().toLocaleDateString('ko-KR', { 
-                                            year: 'numeric', 
-                                            month: 'long', 
-                                            day: 'numeric',
-                                            weekday: 'long'
-                                        })}
-                                    </p>
-                                    <button
-                                        onClick={() => {
-                                            setStats(null);
-                                            setBirthday('');
-                                            setName('');
-                                            localStorage.removeItem('userBirthday');
-                                            localStorage.removeItem('userName');
-                                        }}
-                                        className="mt-4 text-sm text-gray-500 hover:text-gray-700 underline"
-                                    >
-                                        정보 변경하기
-                                    </button>
+                                {/* 검색 바 */}
+                                <div className="bg-white rounded-2xl shadow-2xl p-4">
+                                    <form onSubmit={handleSearch} className="flex gap-2">
+                                        <select value={searchEngine} onChange={(e) => { setSearchEngine(e.target.value); localStorage.setItem('searchEngine', e.target.value); }}
+                                            className="px-4 py-2 border-2 border-purple-300 rounded-lg focus:outline-none focus:border-purple-500">
+                                            <option value="google">Google</option>
+                                            <option value="wikipedia">Wikipedia</option>
+                                            <option value="youtube">YouTube</option>
+                                            <option value="github">GitHub</option>
+                                        </select>
+                                        <div className="flex-1 relative">
+                                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                                                placeholder={t.searchPlaceholder}
+                                                className="w-full pl-10 pr-4 py-2 border-2 border-purple-300 rounded-lg text-lg focus:outline-none focus:border-purple-500" />
+                                        </div>
+                                    </form>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    <StatCard
-                                        icon={Calendar}
-                                        label="살아온 날"
-                                        value={stats.totalDays}
-                                        subtitle={`${stats.age}세`}
-                                        color="from-blue-500 to-blue-600"
-                                    />
-                                    <StatCard
-                                        icon={Calendar}
-                                        label="올해"
-                                        value={stats.dayOfYear}
-                                        subtitle={`${stats.totalDaysInYear}일 중 ${stats.dayOfYear}번째 날 (${stats.daysLeftInYear}일 남음)`}
-                                        color="from-indigo-500 to-indigo-600"
-                                    />
-                                    <StatCard
-                                        icon={Sun}
-                                        label="지나온 일요일"
-                                        value={stats.sundays}
-                                        subtitle="휴식의 날들"
-                                        color="from-yellow-500 to-orange-500"
-                                    />
-                                    <StatCard
-                                        icon={Clock}
-                                        label="살아온 시간"
-                                        value={stats.totalHours}
-                                        subtitle={`${stats.totalMinutes.toLocaleString()} 분`}
-                                        color="from-green-500 to-green-600"
-                                    />
-                                    <StatCard
-                                        icon={Heart}
-                                        label="심장 박동"
-                                        value={stats.heartbeats}
-                                        subtitle="계속 뛰고 있습니다"
-                                        color="from-red-500 to-pink-500"
-                                    />
-                                    <StatCard
-                                        icon={TrendingUp}
-                                        label="숨쉰 횟수"
-                                        value={stats.breaths}
-                                        subtitle="생명의 숨결"
-                                        color="from-cyan-500 to-blue-500"
-                                    />
-                                    <StatCard
-                                        icon={Award}
-                                        label="다음 생일까지"
-                                        value={stats.daysToNextBirthday}
-                                        subtitle="일 남았습니다"
-                                        color="from-purple-500 to-indigo-500"
-                                    />
-                                </div>
-
-                                <div className="bg-white rounded-2xl shadow-2xl p-8">
-                                    <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-                                        재미있는 통계들
-                                    </h2>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-                                        <div>
-                                            <p className="text-3xl font-bold text-purple-600">{stats.totalWeeks.toLocaleString()}</p>
-                                            <p className="text-gray-600 mt-1">주</p>
+                                {/* 북마크 */}
+                                <div className="bg-white rounded-2xl shadow-2xl p-6">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                                            <Bookmark className="w-6 h-6" /> {t.bookmarks}
+                                        </h2>
+                                        {bookmarks.length < 10 && (
+                                            <button onClick={() => setShowBookmarkForm(!showBookmarkForm)}
+                                                className="flex items-center gap-1 bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                                                <Plus className="w-4 h-4" /> {t.add}
+                                            </button>
+                                        )}
+                                    </div>
+                                    {showBookmarkForm && (
+                                        <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+                                            <input type="text" placeholder={t.bookmarkName} value={newBookmark.name}
+                                                onChange={(e) => setNewBookmark({...newBookmark, name: e.target.value})}
+                                                className="w-full mb-2 p-2 border rounded" />
+                                            <input type="text" placeholder={t.bookmarkUrl} value={newBookmark.url}
+                                                onChange={(e) => setNewBookmark({...newBookmark, url: e.target.value})}
+                                                className="w-full mb-2 p-2 border rounded" />
+                                            <div className="flex gap-2">
+                                                <button onClick={addBookmark} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">{t.add}</button>
+                                                <button onClick={() => setShowBookmarkForm(false)} className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">{t.cancel}</button>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-3xl font-bold text-pink-600">{stats.totalMonths.toLocaleString()}</p>
-                                            <p className="text-gray-600 mt-1">개월</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-3xl font-bold text-blue-600">{stats.sleepHours.toLocaleString()}</p>
-                                            <p className="text-gray-600 mt-1">수면 시간</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-3xl font-bold text-orange-600">{stats.meals.toLocaleString()}</p>
-                                            <p className="text-gray-600 mt-1">먹은 식사</p>
-                                        </div>
+                                    )}
+                                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                                        {bookmarks.map(b => (
+                                            <div key={b.id} className="group relative">
+                                                <a href={b.url} target="_blank" rel="noopener noreferrer"
+                                                    className="block p-3 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg hover:from-purple-100 hover:to-pink-100 text-center transition-colors">
+                                                    <p className="font-semibold text-gray-800 truncate">{b.name}</p>
+                                                </a>
+                                                <button onClick={() => deleteBookmark(b.id)}
+                                                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
 
+                                {/* 도시 & 시간 */}
+                                <div className="bg-white rounded-2xl shadow-2xl p-6">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                                            <Globe className="w-6 h-6" /> {t.weatherAndTime}
+                                        </h2>
+                                        {cities.length < 10 && (
+                                            <button onClick={() => setShowCityForm(!showCityForm)}
+                                                className="flex items-center gap-1 bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                                                <Plus className="w-4 h-4" /> {t.add}
+                                            </button>
+                                        )}
+                                    </div>
+                                    {showCityForm && (
+                                        <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+                                            <input type="text" placeholder={t.cityName} value={newCity}
+                                                onChange={(e) => setNewCity(e.target.value)}
+                                                className="w-full mb-2 p-2 border rounded" />
+                                            <div className="flex gap-2">
+                                                <button onClick={addCity} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">{t.add}</button>
+                                                <button onClick={() => setShowCityForm(false)} className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500">{t.cancel}</button>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                        {cities.map(city => (
+                                            <div key={city.id} className="group relative bg-gradient-to-br from-blue-50 to-cyan-50 p-4 rounded-lg">
+                                                <button onClick={() => deleteCity(city.id)}
+                                                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                                <p className="font-bold text-gray-800">{city.name}</p>
+                                                <p className="text-2xl font-bold text-blue-600">{getCityTime()}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* 인사말 */}
+                                <div className="bg-white rounded-2xl shadow-2xl p-8 text-center">
+                                    <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-4">
+                                        {name}{t.greeting} 👋
+                                    </h2>
+                                    <p className="text-2xl font-semibold text-gray-700 mb-2">{getMotivationalQuote()}</p>
+                                    <p className="text-gray-500 mt-4">
+                                        {new Date().toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US', { 
+                                            year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
+                                        })}
+                                    </p>
+                                    <button onClick={() => {
+                                            setStats(null); setBirthday(''); setName('');
+                                            localStorage.removeItem('userBirthday'); localStorage.removeItem('userName');
+                                        }}
+                                        className="mt-4 text-sm text-gray-500 hover:text-gray-700 underline">{t.changeInfo}</button>
+                                </div>
+
+                                {/* 메인 통계 */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <StatCard icon={Calendar} label={t.daysLived} value={stats.totalDays}
+                                        subtitle={`${stats.age} ${t.age}`} color="from-blue-500 to-blue-600" />
+                                    <StatCard icon={Calendar} label={t.thisYear} value={stats.dayOfYear}
+                                        subtitle={`${stats.totalDaysInYear} ${t.yearProgress} ${stats.dayOfYear}${t.번째날} (${stats.daysLeftInYear} ${t.daysLeft})`}
+                                        color="from-indigo-500 to-indigo-600" />
+                                    <StatCard icon={Sun} label={t.sundays} value={stats.sundays}
+                                        subtitle={t.sundaysSubtitle} color="from-yellow-500 to-orange-500" />
+                                    <StatCard icon={Clock} label={t.hoursLived} value={stats.totalHours}
+                                        subtitle={`${stats.totalMinutes.toLocaleString()} ${t.minutes}`} color="from-green-500 to-green-600" />
+                                    <StatCard icon={Heart} label={t.heartbeats} value={stats.heartbeats}
+                                        subtitle={t.heartbeatsSubtitle} color="from-red-500 to-pink-500" />
+                                    <StatCard icon={TrendingUp} label={t.breaths} value={stats.breaths}
+                                        subtitle={t.breathsSubtitle} color="from-cyan-500 to-blue-500" />
+                                    <StatCard icon={Award} label={t.nextBirthday} value={stats.daysToNextBirthday}
+                                        subtitle={t.daysRemaining} color="from-purple-500 to-indigo-500" />
+                                </div>
+
+                                {/* 재미있는 통계 */}
+                                <div className="bg-white rounded-2xl shadow-2xl p-8">
+                                    <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">{t.funStats}</h2>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                                        <div><p className="text-3xl font-bold text-purple-600">{stats.totalWeeks.toLocaleString()}</p>
+                                            <p className="text-gray-600 mt-1">{t.weeks}</p></div>
+                                        <div><p className="text-3xl font-bold text-pink-600">{stats.totalMonths.toLocaleString()}</p>
+                                            <p className="text-gray-600 mt-1">{t.months}</p></div>
+                                        <div><p className="text-3xl font-bold text-blue-600">{stats.sleepHours.toLocaleString()}</p>
+                                            <p className="text-gray-600 mt-1">{t.sleepHours}</p></div>
+                                        <div><p className="text-3xl font-bold text-orange-600">{stats.meals.toLocaleString()}</p>
+                                            <p className="text-gray-600 mt-1">{t.meals}</p></div>
+                                    </div>
+                                </div>
+
+                                {/* 실시간 카운터 */}
                                 <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl shadow-2xl p-8 text-white">
-                                    <h2 className="text-2xl font-bold mb-4 text-center">실시간 카운터</h2>
+                                    <h2 className="text-2xl font-bold mb-4 text-center">{t.realtimeCounter}</h2>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                                        <div>
-                                            <p className="text-2xl font-bold">{stats.totalSeconds.toLocaleString()}</p>
-                                            <p className="text-sm opacity-90">초</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-2xl font-bold">{stats.totalMinutes.toLocaleString()}</p>
-                                            <p className="text-sm opacity-90">분</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-2xl font-bold">{stats.totalHours.toLocaleString()}</p>
-                                            <p className="text-sm opacity-90">시간</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-2xl font-bold">{stats.totalDays.toLocaleString()}</p>
-                                            <p className="text-sm opacity-90">일</p>
-                                        </div>
+                                        <div><p className="text-2xl font-bold">{stats.totalSeconds.toLocaleString()}</p>
+                                            <p className="text-sm opacity-90">{t.seconds}</p></div>
+                                        <div><p className="text-2xl font-bold">{stats.totalMinutes.toLocaleString()}</p>
+                                            <p className="text-sm opacity-90">{t.minutes}</p></div>
+                                        <div><p className="text-2xl font-bold">{stats.totalHours.toLocaleString()}</p>
+                                            <p className="text-sm opacity-90">{t.hours}</p></div>
+                                        <div><p className="text-2xl font-bold">{stats.totalDays.toLocaleString()}</p>
+                                            <p className="text-sm opacity-90">{t.days}</p></div>
                                     </div>
                                 </div>
                             </div>
@@ -438,11 +597,8 @@
 
                         <div className="text-center mt-8 pb-8">
                             <p className="text-white text-sm opacity-75">
-                                {new Date().toLocaleDateString('ko-KR', { 
-                                    year: 'numeric', 
-                                    month: 'long', 
-                                    day: 'numeric',
-                                    weekday: 'long'
+                                {new Date().toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US', { 
+                                    year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
                                 })}
                             </p>
                         </div>
